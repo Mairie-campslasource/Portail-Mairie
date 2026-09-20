@@ -373,7 +373,7 @@ body {
           <span class="ql">Associations</span>
           <span class="qd">Guide des associations</span>
         </a>
-        <a class="qlink" id="qlinkMairie" href="https://www.camps-la-source.fr" target="_blank" rel="noopener">
+        <a class="qlink" id="qlinkMairie" href="https://www.campslasource.fr/" target="_blank" rel="noopener">
           <span class="qi">🏠</span>
           <span class="ql">Site de la mairie</span>
           <span class="qd">Démarches et services</span>
@@ -390,16 +390,22 @@ body {
     </div>
 
     <!-- ANIMATIONS -->
-    <div id="pageAnimations" class="page-iframe">
-      <div class="iframe-wrap">
-        <iframe id="iframeAnimations" loading="lazy" title="Planning des animations"></iframe>
+    <div id="pageAnimations" class="page">
+      <div class="stitle" style="margin-top:0.25rem">Planning des animations</div>
+      <div class="info-block" style="text-align:center;padding:2rem 1rem;">
+        <span style="font-size:3rem;display:block;margin-bottom:0.75rem;">🎉</span>
+        <p style="margin-bottom:1rem;">Retrouvez tous les événements et animations de la commune.</p>
+        <a href="https://sites.google.com/view/camps-la-source-animations/accueil" target="_blank" rel="noopener" class="phone-link" style="text-decoration:none;">Ouvrir le planning</a>
       </div>
     </div>
 
     <!-- ASSOCIATIONS -->
-    <div id="pageAssociations" class="page-iframe">
-      <div class="iframe-wrap">
-        <iframe id="iframeAssociations" loading="lazy" title="Guide des associations"></iframe>
+    <div id="pageAssociations" class="page">
+      <div class="stitle" style="margin-top:0.25rem">Guide des associations</div>
+      <div class="info-block" style="text-align:center;padding:2rem 1rem;">
+        <span style="font-size:3rem;display:block;margin-bottom:0.75rem;">🤝</span>
+        <p style="margin-bottom:1rem;">Découvrez toutes les associations de Camps-la-Source.</p>
+        <a id="linkAssoBtn" href="#" target="_blank" rel="noopener" class="phone-link" style="text-decoration:none;">Ouvrir le guide</a>
       </div>
     </div>
 
@@ -409,8 +415,8 @@ body {
       <div class="info-block">
         <p><span class="ilabel">Mairie de Camps-la-Source</span></p>
         <p>Place de la Mairie, 83170 Camps-la-Source</p>
-        <p><span class="ilabel">Horaires :</span> Lundi au vendredi, 8h30 - 12h / 13h30 - 17h</p>
-        <a href="tel:0494809001" class="phone-link">📞 04 94 80 90 01</a>
+        <p><span class="ilabel">Horaires :</span> Lundi au vendredi, 9h00 - 12h00 / 14h00 - 16h00</p>
+        <a href="tel:0494808359" class="phone-link">📞 04 94 80 83 59</a>
       </div>
 
       <div class="stitle">Numéros d'urgence</div>
@@ -425,8 +431,8 @@ body {
 
       <div class="stitle">Liens utiles</div>
       <div class="info-block">
-        <p><a href="https://www.camps-la-source.fr" target="_blank" rel="noopener">Site officiel de la commune</a></p>
-        <p><a href="https://www.dfrancetvinfo.fr/meteo/previsions-meteo/var_83/camps-la-source_83870/" target="_blank" rel="noopener">Météo Camps-la-Source</a></p>
+        <p><a href="#" target="_blank" rel="noopener">Site officiel de la commune</a></p>
+        <p><a href="https://meteofrance.com/previsions-meteo-france/camps-la-source/83170" target="_blank" rel="noopener">Météo Camps-la-Source</a></p>
       </div>
     </div>
   </div>
@@ -479,7 +485,6 @@ const pages = {
   infos: document.getElementById('pageInfos'),
 };
 
-let iframesLoaded = { animations: false, associations: false };
 
 function switchTab(tab) {
   // Hide all pages
@@ -488,18 +493,8 @@ function switchTab(tab) {
   // Show target
   const page = pages[tab];
   if (page) {
-    page.style.display = page.classList.contains('page-iframe') ? 'flex' : 'block';
+    page.style.display = 'block';
     page.classList.add('active');
-  }
-
-  // Lazy load iframes
-  if (tab === 'animations' && !iframesLoaded.animations && CONFIG.URL_ANIMATIONS) {
-    document.getElementById('iframeAnimations').src = CONFIG.URL_ANIMATIONS;
-    iframesLoaded.animations = true;
-  }
-  if (tab === 'associations' && !iframesLoaded.associations && CONFIG.URL_ASSOCIATIONS) {
-    document.getElementById('iframeAssociations').src = CONFIG.URL_ASSOCIATIONS;
-    iframesLoaded.associations = true;
   }
 
   // Update nav buttons
