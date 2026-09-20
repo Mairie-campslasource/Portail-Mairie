@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2B4C7E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Camps">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
+<title>Camps-la-Source</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* =============================
+   CONFIGURATION
+   Remplacez les valeurs ci-dessous par vos URLs Google Sheet
+   ============================= */
+
+:root {
+  /* Couleurs */
+  --blue: #2B4C7E;
+  --blue-light: #3D6BA8;
+  --blue-dark: #1E3A5F;
+  --gold: #C8993E;
+  --gold-light: #F0DFB4;
+  --stone: #F5F2ED;
+  --stone-dark: #E8E3DB;
+  --sage: #5A7F60;
+  --text: #2D2926;
+  --text-light: #6B6560;
+  --white: #FFFFFF;
+  --red: #C0392B;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--stone);
+  color: var(--text);
+  line-height: 1.6;
+  height: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App shell */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Header */
+.app-header {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+  color: #fff;
+  padding: calc(0.75rem + var(--safe-top)) 1.25rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.app-header .logo {
+  width: 40px; height: 40px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.app-header h1 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.app-header .sub {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+/* Alert banner */
+.alert-bar {
+  background: var(--red);
+  color: #fff;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.82rem;
+  display: none;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.alert-bar.visible { display: block; }
+.alert-bar strong { margin-right: 0.35rem; }
+
+/* Content area */
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page {
+  display: none;
+  padding: 1rem 1rem 1.5rem;
+  min-height: 100%;
+}
+.page.active { display: block; }
+
+/* Bottom nav */
+.bottom-nav {
+  display: flex;
+  background: var(--white);
+  border-top: 1px solid var(--stone-dark);
+  flex-shrink: 0;
+  padding-bottom: var(--safe-bottom);
+  z-index: 10;
+}
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.55rem 0.25rem 0.45rem;
+  border: none;
+  background: none;
+  color: var(--text-light);
+  font-size: 0.65rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-btn .icon { font-size: 1.35rem; line-height: 1; }
+.nav-btn.active { color: var(--blue); }
+.nav-btn.active .icon { transform: scale(1.1); }
+
+/* Section title */
+.stitle {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--blue);
+  margin: 1.25rem 0 0.65rem;
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--gold);
+}
+.stitle:first-child { margin-top: 0.25rem; }
+
+/* Quick links grid */
+.qlinks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+.qlink {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 0.85rem;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  box-shadow: 0 1px 4px rgba(43,76,126,0.06);
+  transition: transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.qlink:active { transform: scale(0.97); }
+.qlink .qi { font-size: 1.6rem; }
+.qlink .ql {
+  font-weight: 600;
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+.qlink .qd {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  line-height: 1.35;
+}
+
+/* Annonce card */
+.card {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.65rem;
+  box-shadow: 0 1px 4px rgba(43,76,126,0.06);
+}
+.card .cdate {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  margin-bottom: 0.2rem;
+}
+.card .ctag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  background: var(--gold-light);
+  color: var(--gold);
+  margin-bottom: 0.3rem;
+  margin-left: 0.4rem;
+}
+.card .ctitle {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--blue);
+  margin-bottom: 0.3rem;
+}
+.card .cbody {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+.card .clink {
+  display: inline-block;
+  margin-top: 0.45rem;
+  color: var(--blue-light);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.card .clink:hover { text-decoration: underline; }
+
+/* Empty */
+.empty {
+  text-align: center;
+  color: var(--text-light);
+  font-size: 0.88rem;
+  padding: 2.5rem 1rem;
+}
+
+/* Infos page */
+.info-block {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.65rem;
+  box-shadow: 0 1px 4px rgba(43,76,126,0.06);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+.info-block .ilabel {
+  font-weight: 600;
+  color: var(--blue);
+}
+.info-block a {
+  color: var(--blue-light);
+  text-decoration: none;
+}
+
+/* Iframe pages */
+.iframe-wrap {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--white);
+}
+.iframe-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.page-iframe {
+  padding: 0.5rem;
+  display: none;
+  height: 100%;
+}
+.page-iframe.active { display: flex; flex-direction: column; }
+
+/* Loading */
+.loader {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+.loader::before {
+  content: '';
+  display: block;
+  width: 28px; height: 28px;
+  border: 3px solid var(--stone-dark);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  margin: 0 auto 0.75rem;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Phone link */
+.phone-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--blue);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-top: 0.5rem;
+}
+
+/* Numero urgence */
+.urgence-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.urgence-item {
+  background: var(--stone);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  text-align: center;
+}
+.urgence-item .num {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--red);
+}
+.urgence-item .lab {
+  font-size: 0.7rem;
+  color: var(--text-light);
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="logo">🏛️</div>
+    <div>
+      <h1>Camps-la-Source</h1>
+      <div class="sub">Portail d'informations</div>
+    </div>
+  </div>
+
+  <!-- Alerte -->
+  <div id="alertBar" class="alert-bar"></div>
+
+  <!-- Pages -->
+  <div class="tab-content">
+
+    <!-- ACCUEIL -->
+    <div id="pageAccueil" class="page active">
+      <div class="stitle">Accès rapides</div>
+      <div class="qlinks">
+        <a class="qlink" href="#" onclick="switchTab('animations');return false;">
+          <span class="qi">🎉</span>
+          <span class="ql">Animations</span>
+          <span class="qd">Événements de la commune</span>
+        </a>
+        <a class="qlink" href="#" onclick="switchTab('associations');return false;">
+          <span class="qi">🤝</span>
+          <span class="ql">Associations</span>
+          <span class="qd">Guide des associations</span>
+        </a>
+        <a class="qlink" id="qlinkMairie" href="https://www.camps-la-source.fr" target="_blank" rel="noopener">
+          <span class="qi">🏠</span>
+          <span class="ql">Site de la mairie</span>
+          <span class="qd">Démarches et services</span>
+        </a>
+        <a class="qlink" href="#" onclick="switchTab('infos');return false;">
+          <span class="qi">📞</span>
+          <span class="ql">Infos pratiques</span>
+          <span class="qd">Horaires, contacts, urgences</span>
+        </a>
+      </div>
+
+      <div class="stitle">Actualités</div>
+      <div id="annonces"><div class="loader">Chargement...</div></div>
+    </div>
+
+    <!-- ANIMATIONS -->
+    <div id="pageAnimations" class="page-iframe">
+      <div class="iframe-wrap">
+        <iframe id="iframeAnimations" loading="lazy" title="Planning des animations"></iframe>
+      </div>
+    </div>
+
+    <!-- ASSOCIATIONS -->
+    <div id="pageAssociations" class="page-iframe">
+      <div class="iframe-wrap">
+        <iframe id="iframeAssociations" loading="lazy" title="Guide des associations"></iframe>
+      </div>
+    </div>
+
+    <!-- INFOS -->
+    <div id="pageInfos" class="page active" style="display:none;">
+      <div class="stitle" style="margin-top:0.25rem">Mairie</div>
+      <div class="info-block">
+        <p><span class="ilabel">Mairie de Camps-la-Source</span></p>
+        <p>Place de la Mairie, 83170 Camps-la-Source</p>
+        <p><span class="ilabel">Horaires :</span> Lundi au vendredi, 8h30 - 12h / 13h30 - 17h</p>
+        <a href="tel:0494809001" class="phone-link">📞 04 94 80 90 01</a>
+      </div>
+
+      <div class="stitle">Numéros d'urgence</div>
+      <div class="info-block">
+        <div class="urgence-grid">
+          <div class="urgence-item"><div class="num">15</div><div class="lab">SAMU</div></div>
+          <div class="urgence-item"><div class="num">18</div><div class="lab">Pompiers</div></div>
+          <div class="urgence-item"><div class="num">17</div><div class="lab">Gendarmerie</div></div>
+          <div class="urgence-item"><div class="num">112</div><div class="lab">Urgences Europe</div></div>
+        </div>
+      </div>
+
+      <div class="stitle">Liens utiles</div>
+      <div class="info-block">
+        <p><a href="https://www.camps-la-source.fr" target="_blank" rel="noopener">Site officiel de la commune</a></p>
+        <p><a href="https://www.dfrancetvinfo.fr/meteo/previsions-meteo/var_83/camps-la-source_83870/" target="_blank" rel="noopener">Météo Camps-la-Source</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('accueil')" data-tab="accueil">
+      <span class="icon">🏠</span> Accueil
+    </button>
+    <button class="nav-btn" onclick="switchTab('animations')" data-tab="animations">
+      <span class="icon">🎉</span> Animations
+    </button>
+    <button class="nav-btn" onclick="switchTab('associations')" data-tab="associations">
+      <span class="icon">🤝</span> Associations
+    </button>
+    <button class="nav-btn" onclick="switchTab('infos')" data-tab="infos">
+      <span class="icon">ℹ️</span> Infos
+    </button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+//  CONFIGURATION - REMPLACEZ CES VALEURS
+// =====================================================
+
+const CONFIG = {
+  // ID de votre Google Sheet (celui dans l'URL du Sheet)
+  SHEET_ID: '1E_6MaDguFT0g-QfR5VAK7dh4rbOrDAt5',
+
+  // Noms des onglets dans le Google Sheet
+  ONGLET_ANNONCES: 'Annonces',
+  ONGLET_ALERTE: 'Alerte',
+
+  // URL de la page Google Sites des animations
+  URL_ANIMATIONS: 'https://sites.google.com/view/camps-la-source-animations/accueil',
+
+  // URL de la page Google Sites du guide des associations
+  URL_ASSOCIATIONS: '',
+};
+
+// =====================================================
+//  NAVIGATION
+// =====================================================
+
+const pages = {
+  accueil: document.getElementById('pageAccueil'),
+  animations: document.getElementById('pageAnimations'),
+  associations: document.getElementById('pageAssociations'),
+  infos: document.getElementById('pageInfos'),
+};
+
+let iframesLoaded = { animations: false, associations: false };
+
+function switchTab(tab) {
+  // Hide all pages
+  Object.values(pages).forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
+
+  // Show target
+  const page = pages[tab];
+  if (page) {
+    page.style.display = page.classList.contains('page-iframe') ? 'flex' : 'block';
+    page.classList.add('active');
+  }
+
+  // Lazy load iframes
+  if (tab === 'animations' && !iframesLoaded.animations && CONFIG.URL_ANIMATIONS) {
+    document.getElementById('iframeAnimations').src = CONFIG.URL_ANIMATIONS;
+    iframesLoaded.animations = true;
+  }
+  if (tab === 'associations' && !iframesLoaded.associations && CONFIG.URL_ASSOCIATIONS) {
+    document.getElementById('iframeAssociations').src = CONFIG.URL_ASSOCIATIONS;
+    iframesLoaded.associations = true;
+  }
+
+  // Update nav buttons
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+}
+
+// =====================================================
+//  CHARGEMENT DES DONNEES GOOGLE SHEET
+// =====================================================
+
+function loadSheetData(sheetName, callback) {
+  const url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+
+  const script = document.createElement('script');
+  const cbName = 'cb_' + sheetName.replace(/[^a-z]/gi,'') + '_' + Date.now();
+
+  window[cbName] = function(data) {
+    delete window[cbName];
+    script.remove();
+    callback(data);
+  };
+
+  // Google Visualization returns JSONP-like: google.visualization.Query.setResponse({...})
+  // We intercept via a modified approach
+  fetch(url)
+    .then(r => r.text())
+    .then(text => {
+      // Extract JSON from: /*O_o*/ google.visualization.Query.setResponse({...});
+      const match = text.match(/google\.visualization\.Query\.setResponse\((.+)\);?\s*$/);
+      if (match) {
+        try {
+          const json = JSON.parse(match[1]);
+          callback(json);
+        } catch(e) { callback(null); }
+      } else {
+        callback(null);
+      }
+    })
+    .catch(() => callback(null));
+}
+
+function parseRows(data) {
+  if (!data || !data.table) return [];
+  const cols = data.table.cols.map(c => c.label || '');
+  return data.table.rows.map(r => {
+    const obj = {};
+    r.c.forEach((cell, i) => {
+      obj[cols[i]] = cell ? (cell.v != null ? String(cell.v) : '') : '';
+    });
+    return obj;
+  });
+}
+
+// =====================================================
+//  ANNONCES
+// =====================================================
+
+function loadAnnonces() {
+  if (CONFIG.SHEET_ID === '1E_6MaDguFT0g-QfR5VAK7dh4rbOrDAt5') {
+    document.getElementById('annonces').innerHTML =
+      '<div class="empty">Configuration requise.<br>Renseignez le SHEET_ID dans le fichier index.html.</div>';
+    return;
+  }
+
+  loadSheetData(CONFIG.ONGLET_ANNONCES, function(data) {
+    const rows = parseRows(data).filter(r => (r['Afficher'] || '').toLowerCase() === 'oui');
+
+    // Sort by date descending
+    rows.sort((a,b) => {
+      const da = parseDate(a['Date']), db = parseDate(b['Date']);
+      return db - da;
+    });
+
+    const container = document.getElementById('annonces');
+
+    if (!rows.length) {
+      container.innerHTML = '<div class="empty">Aucune actualité pour le moment.</div>';
+      return;
+    }
+
+    container.innerHTML = rows.map(r => {
+      const dateStr = r['Date'] ? formatDate(parseDate(r['Date'])) : '';
+      const cat = r['Categorie'] || '';
+      const linkHtml = r['Lien']
+        ? `<a class="clink" href="${esc(r['Lien'])}" target="_blank" rel="noopener">${esc(r['Texte lien'] || 'En savoir plus')}</a>`
+        : '';
+      const tagHtml = cat ? `<span class="ctag">${esc(cat)}</span>` : '';
+
+      return `<div class="card">
+        <div class="cdate">${esc(dateStr)}${tagHtml}</div>
+        <div class="ctitle">${esc(r['Titre'] || '')}</div>
+        <div class="cbody">${esc(r['Contenu'] || '').replace(/\n/g,'<br>')}</div>
+        ${linkHtml}
+      </div>`;
+    }).join('');
+  });
+}
+
+function parseDate(s) {
+  if (!s) return new Date(0);
+  // Handle "Date(yyyy,m,d)" from Google
+  const gm = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (gm) return new Date(+gm[1], +gm[2], +gm[3]);
+  // Handle dd/mm/yyyy
+  const parts = s.split('/');
+  if (parts.length === 3) return new Date(+parts[2], +parts[1]-1, +parts[0]);
+  return new Date(s);
+}
+
+function formatDate(d) {
+  if (!d || isNaN(d)) return '';
+  return d.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+}
+
+// =====================================================
+//  ALERTE
+// =====================================================
+
+function loadAlerte() {
+  if (CONFIG.SHEET_ID === '1E_6MaDguFT0g-QfR5VAK7dh4rbOrDAt5') return;
+
+  loadSheetData(CONFIG.ONGLET_ALERTE, function(data) {
+    const rows = parseRows(data);
+    if (!rows.length) return;
+    const r = rows[0];
+    if ((r['Active'] || '').toLowerCase() === 'oui' && r['Message']) {
+      const bar = document.getElementById('alertBar');
+      bar.innerHTML = (r['Titre'] ? '<strong>' + esc(r['Titre']) + '</strong> ' : '') + esc(r['Message']);
+      bar.classList.add('visible');
+    }
+  });
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// =====================================================
+//  INIT
+// =====================================================
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// Load data
+loadAnnonces();
+loadAlerte();
+</script>
+</body>
+</html>
